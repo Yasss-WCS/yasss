@@ -1,0 +1,6 @@
+functions-framework==3.*
+google-auth==2.19.*
+google-api-python-client==2.88.*
+google-cloud-datastore==2.15.*
+flask==2.3.*
+google-auth-oauthlib==1.0.*
