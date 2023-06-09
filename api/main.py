@@ -56,10 +56,10 @@ def add_judge(config, user, sheet_id, judge_name):
     return flask.redirect('/')
 
 
-def get_email(ds_client, token):
+def get_session(ds_client, token):
     query = ds_client.query(kind='Session')
     query.add_filter('token', '=', token)
-    return list(query.fetch())[0]['email']
+    return list(query.fetch())
 
 
 def get_refresh_token(ds_client, email):
@@ -111,7 +111,10 @@ def delete_session(config, token):
 
 def get_user(config, token):
     client = datastore.Client(config['ProjectId'])
-    email = get_email(client, token)
+    session = get_session(client, token)
+    if len(session) == 0:
+        return []
+    email = session[0]['email']
     query = client.query(kind='User')
     query.add_filter('email', '=', email)
     return list(query.fetch())
