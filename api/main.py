@@ -251,6 +251,7 @@ def add_judge_display(event_list):
 
 
 def index(config, user):
+    url_prefix = config['UrlPrefix']
     if len(user) == 0:
         events_list = ''
         events = []
@@ -260,9 +261,9 @@ def index(config, user):
     return(
         f'''
         <ul>
-        <li><a href="/?action=login">Admin Log In</a></li>
-        <li><a href="/?action=create&name=TestEvent">Create a test event</a></li>
-        <li><a href="/?action=logout">Admin Log Out</a></li>
+        <li><a href="{url_prefix}?action=login">Admin Log In</a></li>
+        <li><a href="{url_prefix}?action=create&name=TestEvent">Create a test event</a></li>
+        <li><a href="{url_prefix}?action=logout">Admin Log Out</a></li>
         {add_judge_display(events)}
         {events_list}
         ''')
