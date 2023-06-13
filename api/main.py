@@ -12,6 +12,7 @@ from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'  # TODO REMOVE
+os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE'] = '1'  # TODO REMOVE
 
 
 def get_sheets_service(config, refresh_token):
@@ -95,7 +96,9 @@ def create_session(config, email):
 def load_config():
     config = configparser.ConfigParser()
     config.read('config.ini')
-    # TODO Support prod config
+    stage = os.getenv('Stage')
+    if stage is not None:
+        config.read(f'config-{stage}.ini')
     return config['DEFAULT']
 
 
