@@ -8,6 +8,7 @@ import uuid
 from datetime import datetime, timedelta
 
 from client_helpers import get_sheets_service
+from html_helpers import build_index
 
 email_to_sheets_client = {}
 ds_client = None
@@ -223,63 +224,15 @@ class YasssApi:
         response.delete_cookie('sessionID')
         return response
 
-    def get_events(self, user):
+    def get_events(self):
+        if self.user is None:
+            return []
         query = self.ds_client.query(kind='Event')
-        query.add_filter('email', '=', user['email'])
+        query.add_filter('email', '=', self.user['email'])
         res = query.fetch()
         events = list(res)
         return events
 
     def index(self):
-        url_prefix = self.config['UrlPrefix']
-        if len(self.user) == 0:
-            events_list = ''
-            events = []
-        else:
-            events = self.get_events(self.user)
-            events_list = str.join("\n",
-                                   [f"<li>{event['event_name']} - {event['spreadsheet_id']}</li>" for event in events])
-        return (
-            f'''
-            <ul>
-            <li><a href="{url_prefix}?action=login">Admin Log In</a></li>
-            <li><a href="{url_prefix}?action=create&name=TestEvent">Create a test event</a></li>
-            <li><a href="{url_prefix}?action=logout">Admin Log Out</a></li>
-            {self.update_judge_display(events, 'add')}
-            {self.update_judge_display(events, 'remove')}
-            {events_list}
-            ''')
-
-    def update_judge_display(self, event_list, prefix: str):
-        url_prefix = self.config['UrlPrefix']
-        base_html = f"""
-        <h1>{prefix.capitalize()} Judge</h1>
-        <select id="eventName">
-        {{options}}
-        </select>
-        <input type="text" id="judgeName{prefix}" placeholder="Enter judge name">
-        <button id="submitBtn{prefix}">Submit</button>
-        """
-
-        base_js = f"""
-        <script>
-        document.getElementById('submitBtn{prefix}').addEventListener('click', function() {{
-            // Get the user's selections
-            var eventName = document.getElementById('eventName').value;
-            var judgeName = document.getElementById('judgeName{prefix}').value;
-
-            // Build the URL
-            var url = "{url_prefix}?action={prefix}_judge&spreadsheet_id=" + encodeURIComponent(eventName) + "&judge_name=" + encodeURIComponent(judgeName);
-
-            // Redirect to the new page
-            window.location.href = url;
-        }});
-        </script>
-        """
-
-        options = ""
-        for event in event_list:
-            options += f'<option value="{event["spreadsheet_id"]}">{event["event_name"]}</option>\n'
-
-        return base_html.format(options=options) + base_js
+        return build_index(self.config['UrlPrefix'], self.user, self.get_events())
 
