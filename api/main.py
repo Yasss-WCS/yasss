@@ -12,7 +12,6 @@ from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'  # TODO REMOVE
-os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE'] = '1'  # TODO REMOVE
 
 
 def get_sheets_service(config, refresh_token):
@@ -29,11 +28,61 @@ def create_sheet(config, refresh_token, event_name):
     spreadsheet = service.create(
         body={'properties': {'title': event_name}}
     ).execute()
-    sheet_id = spreadsheet['spreadsheetId']
-    return sheet_id
+    spreadsheet_id = spreadsheet['spreadsheetId']
+    return spreadsheet_id
 
 
-def add_judge(config, user, sheet_id, judge_name):
+def remove_judge(config, user, spreadsheet_id, judge_name):
+    service = get_sheets_service(config, user['refresh_token'])
+
+    # Request all data from the sheet named 'Judges'
+    result = service.values().get(
+        spreadsheetId=spreadsheet_id,
+        range='Judges'
+    ).execute()
+
+    values = result.get('values', [])
+
+    # Find rows where the first column matches search_string
+    matching_rows = [i for i, row in enumerate(values) if row and row[0] == judge_name]
+
+    # If there are matching rows, construct a batch update request to delete them
+    if matching_rows:
+        requests = [{
+            'deleteDimension': {
+                'range': {
+                    'sheetId': get_sheet_ids(service, spreadsheet_id)['Judges'],
+                    'dimension': 'ROWS',
+                    'startIndex': row,
+                    'endIndex': row + 1
+                }
+            }
+        } for row in reversed(matching_rows)]  # Reversed to prevent messing up indices after deletion
+
+        body = {
+            'requests': requests
+        }
+
+        # Execute the requests
+        service.batchUpdate(
+            spreadsheetId=spreadsheet_id,
+            body=body
+        ).execute()
+    return flask.redirect('/')
+
+
+def get_sheet_ids(service, spreadsheet_id):
+    result = service.get(
+        spreadsheetId=spreadsheet_id
+    ).execute()
+
+    sheets = result.get('sheets', [])
+    sheet_ids = {sheet['properties']['title']: sheet['properties']['sheetId'] for sheet in sheets}
+
+    return sheet_ids
+
+
+def add_judge(config, user, spreadsheet_id, judge_name):
     sheets_service = get_sheets_service(config, user['refresh_token'])
     range_ = 'Judges'  # Sheet name
     value_input_option = 'USER_ENTERED'  # Other option is 'RAW'
@@ -45,7 +94,7 @@ def add_judge(config, user, sheet_id, judge_name):
     }
 
     sheets_service.values().append(
-        spreadsheetId=sheet_id,
+        spreadsheetId=spreadsheet_id,
         range=range_,
         valueInputOption=value_input_option,
         insertDataOption=insert_data_option,
@@ -72,9 +121,9 @@ def create_event(config, user, event_name):
     event = datastore.Entity(key=event_key)
     event['email'] = user['email']
     event['event_name'] = event_name
-    event['sheet_id'] = create_sheet(config, user['refresh_token'], event_name)
+    event['spreadsheet_id'] = create_sheet(config, user['refresh_token'], event_name)
     client.put(event)
-    return event['sheet_id']
+    return event['spreadsheet_id']
 
 
 def create_session(config, email):
@@ -213,41 +262,44 @@ def run(request: flask.Request):
     else:
         user = user[0]
     if action == 'add_judge':
-        return add_judge(config, user, request.args.get('sheet_id'), request.args.get('judge_name'))
+        return add_judge(config, user, request.args.get('spreadsheet_id'), request.args.get('judge_name'))
+    if action == 'remove_judge':
+        return remove_judge(config, user, request.args.get('spreadsheet_id'), request.args.get('judge_name'))
     if action == 'create':
         return create_event(config, user, request.args.get('name'))
     return flask.abort(404)
 
 
-def add_judge_display(event_list):
-    base_html = """
-    <h1>Add Judge</h1>
+def update_judge_display(config, event_list, prefix: str):
+    url_prefix = config['UrlPrefix']
+    base_html = f"""
+    <h1>{prefix.capitalize()} Judge</h1>
     <select id="eventName">
-    {options}
+    {{options}}
     </select>
-    <input type="text" id="judgeName" placeholder="Enter judge name">
-    <button id="submitBtn">Submit</button>
+    <input type="text" id="judgeName{prefix}" placeholder="Enter judge name">
+    <button id="submitBtn{prefix}">Submit</button>
     """
 
-    base_js = """
+    base_js = f"""
     <script>
-    document.getElementById('submitBtn').addEventListener('click', function() {
+    document.getElementById('submitBtn{prefix}').addEventListener('click', function() {{
         // Get the user's selections
         var eventName = document.getElementById('eventName').value;
-        var judgeName = document.getElementById('judgeName').value;
-
+        var judgeName = document.getElementById('judgeName{prefix}').value;
+    
         // Build the URL
-        var url = "/?action=add_judge&sheet_id=" + encodeURIComponent(eventName) + "&judge_name=" + encodeURIComponent(judgeName);
+        var url = "{url_prefix}?action={prefix}_judge&spreadsheet_id=" + encodeURIComponent(eventName) + "&judge_name=" + encodeURIComponent(judgeName);
 
         // Redirect to the new page
         window.location.href = url;
-    });
+    }});
     </script>
     """
 
     options = ""
     for event in event_list:
-        options += f'<option value="{event["sheet_id"]}">{event["event_name"]}</option>\n'
+        options += f'<option value="{event["spreadsheet_id"]}">{event["event_name"]}</option>\n'
 
     return base_html.format(options=options) + base_js
 
@@ -259,14 +311,15 @@ def index(config, user):
         events = []
     else:
         events = get_events(config, user[0])
-        events_list = str.join("\n", [f"<li>{event['event_name']} - {event['sheet_id']}</li>" for event in events])
+        events_list = str.join("\n", [f"<li>{event['event_name']} - {event['spreadsheet_id']}</li>" for event in events])
     return(
         f'''
         <ul>
         <li><a href="{url_prefix}?action=login">Admin Log In</a></li>
         <li><a href="{url_prefix}?action=create&name=TestEvent">Create a test event</a></li>
         <li><a href="{url_prefix}?action=logout">Admin Log Out</a></li>
-        {add_judge_display(events)}
+        {update_judge_display(config, events, 'add')}
+        {update_judge_display(config, events, 'remove')}
         {events_list}
         ''')
 
