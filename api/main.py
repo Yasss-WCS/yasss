@@ -16,12 +16,9 @@ os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE'] = '1'  # TODO REMOVE
 
 
 def get_sheets_service(config, refresh_token):
-    with open('client_secret.json', 'r') as file:
-        credentials = json.load(file)
-    installed = credentials['installed']
     scopes = config['Scopes'].split(',')
     authorized_user = {'refresh_token': refresh_token, 'scopes': scopes,
-                       'client_id': installed['client_id'], 'client_secret': installed['client_secret']}
+                       'client_id': config['ClientId'], 'client_secret': os.getenv('client_secret')}
     creds = Credentials.from_authorized_user_info(authorized_user, scopes)
     creds.refresh(Request())
     return build('sheets', 'v4', credentials=creds).spreadsheets()
@@ -145,8 +142,13 @@ def get_or_create_user(config, email, refresh_token):
 
 
 def build_flow(config):
-    flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
-        config['ClientsSecret'], scopes=config['Scopes'].split(','))
+    flow = google_auth_oauthlib.flow.Flow.from_client_config(
+        {'installed': {
+            'client_secret': os.getenv('client_secret'),
+            "client_id": config['ClientId'],
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://accounts.google.com/o/oauth2/token"
+        }}, scopes=config['Scopes'].split(','))
     flow.redirect_uri = config['AuthApi']
     return flow
 
