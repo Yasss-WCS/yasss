@@ -30,7 +30,7 @@ class YasssApi:
             email = self.get_spreadsheet_owner(spreadsheet_id)
             user = self.get_user_by_email(email)
         else:
-            raise Exception("Token or Spreadsheet Id must be set")
+            user = []
         if not len(user) == 0:
             self.user = user[0]
             email = self.user['email']
