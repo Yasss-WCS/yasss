@@ -8,7 +8,7 @@ interface ICoupleParams {
     index: number;
 }
 
-export default (params: ICoupleParams): React.JSX.Element => {
+const couple =  (params: ICoupleParams): React.JSX.Element => {
     const names = typeof(params.names) == 'string' ? [params.names] : params.names;
     return (
         <div className="flex items-center mb-4">
@@ -22,3 +22,5 @@ export default (params: ICoupleParams): React.JSX.Element => {
         </div>
     );
 };
+
+export default couple;
