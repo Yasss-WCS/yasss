@@ -15,7 +15,7 @@ ds_client = None
 
 
 class YasssApi:
-    def __init__(self, token):
+    def __init__(self, token=None, spreadsheet_id=None):
         global email_to_sheets_client
         global ds_client
         self.token = token
@@ -23,7 +23,13 @@ class YasssApi:
         if ds_client is None:
             ds_client = datastore.Client(self.config['ProjectId'])
         self.ds_client = ds_client
-        user = self.get_user(token)
+        if token is not None:
+            user = self.get_user_by_token(token)
+        elif spreadsheet_id is not None:
+            email = self.get_spreadsheet_owner(spreadsheet_id)
+            user = self.get_user_by_email(email)
+        else:
+            raise Exception("Token or Spreadsheet Id must be set")
         if not len(user) == 0:
             self.user = user[0]
             email = self.user['email']
@@ -35,6 +41,34 @@ class YasssApi:
             self.user = None
             self.sheets_client = None
         os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'  # TODO REMOVE
+
+    def get_competitors(self, spreadsheet_id, division, rnd, role):
+        result = self.sheets_client.values().get(
+            spreadsheetId=spreadsheet_id,
+            range='Competitors'
+        ).execute()
+
+        return [row[0] for row in result.get('values', [])[1:] if row and row[1] == division and row[2] == role
+                and row[3 == rnd]]
+
+    def submit_scores(self, spreadsheet_id, division, rnd, role, judge_name, scores):
+        range_ = 'Scores'  # Sheet name
+        value_input_option = 'USER_ENTERED'  # Other option is 'RAW'
+        insert_data_option = 'INSERT_ROWS'  # The other options are 'OVERWRITE' and 'INSERT_ROWS'
+        values = [[competitor, division, role, rnd, judge_name, scores[competitor]] for competitor in scores.keys()]
+        value_range_body = {
+            'majorDimension': 'ROWS',
+            'values': values
+        }
+
+        self.sheets_client.values().append(
+            spreadsheetId=spreadsheet_id,
+            range=range_,
+            valueInputOption=value_input_option,
+            insertDataOption=insert_data_option,
+            body=value_range_body
+        ).execute()
+        return 'Success'
 
     def create_sheet(self, event_name):
         spreadsheet = self.sheets_client.create(
@@ -119,6 +153,11 @@ class YasssApi:
         query.add_filter('email', '=', email)
         return list(query.fetch())[0]['refresh_token']
 
+    def get_spreadsheet_owner(self, spreadsheet_id):
+        query = self.ds_client.query(kind='Event')
+        query.add_filter('spreadsheet_id', '=', spreadsheet_id)
+        return list(query.fetch())[0]['email']
+
     def create_event(self, event_name):
         event_key = self.ds_client.key('Event')
         event = datastore.Entity(key=event_key)
@@ -156,7 +195,7 @@ class YasssApi:
         if results:
             self.ds_client.delete(results[0].key)
 
-    def get_user(self, token):
+    def get_user_by_token(self, token):
         session = self.get_session(token)
         if len(session) == 0:
             return []
@@ -165,11 +204,14 @@ class YasssApi:
         query.add_filter('email', '=', email)
         return list(query.fetch())
 
-    def get_or_create_user(self, email, refresh_token):
-        # initialize the new Event
+    def get_user_by_email(self, email):
         query = self.ds_client.query(kind='User')
         query.add_filter('email', '=', email)
-        results = list(query.fetch())
+        return list(query.fetch())
+
+    def get_or_create_user(self, email, refresh_token):
+        # initialize the new Event
+        results = self.get_user_by_email(email)
 
         if results:
             # The user already exists in the datastore.
