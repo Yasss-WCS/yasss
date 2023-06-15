@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 
 from client_helpers import get_sheets_service
 from html_helpers import build_index
+from scoring_helpers import calculate_relative_placement
 
 email_to_sheets_client = {}
 ds_client = None
@@ -50,6 +51,39 @@ class YasssApi:
 
         return [row[0] for row in result.get('values', [])[1:] if row and row[1] == division and row[2] == role
                 and row[3 == rnd]]
+
+    def get_scores(self, spreadsheet_id, division, rnd, role):
+        result = self.sheets_client.values().get(
+            spreadsheetId=spreadsheet_id,
+            range='Scores'
+        ).execute()
+
+        ret = {}
+
+        scores = [row for row in result.get('values', [])[1:] if row and row[1] == division and row[2] == role
+                  and row[3 == rnd]]
+        for score in scores:
+            competitor_name = score[0]
+            if competitor_name not in ret:
+                ret[competitor_name] = {}
+            competitor_dict = ret[competitor_name]
+            judge_name = score[4]
+            if judge_name in competitor_dict:
+                competitor_dict[judge_name] = -1
+            else:
+                competitor_dict[judge_name] = score[5]
+        return ret
+
+    def get_relative_placements(self, spreadsheet_id, division, rnd, role):
+        scores = self.get_scores(spreadsheet_id, division, rnd, role)
+        ret = {}
+        relative_placements = calculate_relative_placement(scores)
+        for key in scores.keys():
+            ret[key] = {}
+            ret[key]['Scores'] = scores[key]
+            ret[key]['Placement'] = relative_placements[key]
+            ret[key]['Name'] = key
+        return sorted([ret[k] for k in ret.keys()], key=lambda score: score['Placement'])
 
     def submit_scores(self, spreadsheet_id, division, rnd, role, judge_name, scores):
         range_ = 'Scores'  # Sheet name
@@ -277,4 +311,3 @@ class YasssApi:
 
     def index(self):
         return build_index(self.config['UrlPrefix'], self.user, self.get_events())
-
