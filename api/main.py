@@ -9,32 +9,31 @@ def run(request: flask.Request):
     role = request.args.get('role')
     division = request.args.get('division')
     rnd = request.args.get('round')
+    judge_name = request.args.get('judge_name')
+    event_name = request.args.get('event_name')
     yass_api = YasssApi(token=token, spreadsheet_id=spreadsheet_id)
     if action is None:
         if request.args.get('code') is not None:
             return yass_api.oauth2callback()
         else:
             return yass_api.index()
-    if action == 'login':
+    if action == 'login' and request.method == 'GET':
         return yass_api.login()
-    if action == 'logout':
+    if action == 'logout' and request.method == 'GET':
         return yass_api.logout(token)
-    if action == 'add_judge':
-        return yass_api.add_judge(spreadsheet_id, request.args.get('judge_name'))
-    if action == 'remove_judge':
-        return yass_api.remove_judge(spreadsheet_id, request.args.get('judge_name'))
-    if action == 'create':
-        return yass_api.create_event(request.args.get('name'))
-    if action == 'get_scores':
+    if action == 'add_judge' and request.method == 'POST':
+        return yass_api.add_judge(spreadsheet_id, judge_name)
+    if action == 'remove_judge' and request.method == 'POST':
+        return yass_api.remove_judge(spreadsheet_id, judge_name)
+    if action == 'create_event' and request.method == 'POST':
+        return yass_api.create_event(event_name)
+    if action == 'get_scores' and request.method == 'GET':
         return yass_api.get_scores(spreadsheet_id, division, rnd, role)
-    if action == 'get_placements':
+    if action == 'get_placements' and request.method == 'GET':
         return yass_api.get_relative_placements(spreadsheet_id, division, rnd, role)
-    if action == 'get_competitors':
+    if action == 'get_competitors' and request.method == 'GET':
         return yass_api.get_competitors(spreadsheet_id, division, rnd, role)
-    if action == 'get_scores':
-        return yass_api.get_competitors(spreadsheet_id, division, rnd, role)
-    if action == 'submit_scores':
-        judge_name = request.args.get('judge_name')
+    if action == 'submit_scores' and request.method == 'POST':
         scores = request.get_json()
         return yass_api.submit_scores(spreadsheet_id, division, rnd, role, judge_name, scores)
     return flask.abort(404)
