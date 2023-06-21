@@ -33,6 +33,8 @@ def run(request: flask.Request):
         return yass_api.get_relative_placements(spreadsheet_id, division, rnd, role)
     if action == 'get_competitors' and request.method == 'GET':
         return yass_api.get_competitors(spreadsheet_id, division, rnd, role)
+    if action == 'get_events' and request.method == 'GET':
+        return yass_api.get_events()
     if action == 'submit_scores' and request.method == 'POST':
         scores = request.get_json()
         return yass_api.submit_scores(spreadsheet_id, division, rnd, role, judge_name, scores)
