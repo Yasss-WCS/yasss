@@ -1,3 +1,4 @@
+import React from 'react'
 import DanceCompetition from './danceCompetition'
 
 export default function Home() {
