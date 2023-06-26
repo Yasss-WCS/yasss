@@ -1,6 +1,12 @@
 'use client';
-import * as mui from '@mui/material';
-import * as muiIcons from '@mui/icons-material'
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import IconButton from '@mui/material/IconButton';
+import Typography from '@mui/material/Typography';
+import Card from '@mui/material/Card';
+
+import Menu from '@mui/icons-material/Menu'
+import AccountCircle from '@mui/icons-material/AccountCircle'
 
 const Competition = {
     name: "Liberty Swing 2023",
@@ -9,26 +15,26 @@ const Competition = {
 
 function CompetitionCard() {
     return (
-        <mui.Card variant="outlined">
+        <Card variant="outlined">
             <div>Competition:</div>
             <div>{Competition.name}</div>
             <div>{Competition.division}</div>
-        </mui.Card>
+        </Card>
     )
 }
 
 function Header() {
     return (
-        <mui.AppBar position="static">
-            <mui.Toolbar variant="dense">
-                <mui.IconButton edge="start" color="inherit" aria-label="menu" sx={{ mr: 2 }}>
-                    <muiIcons.Menu/>
-                </mui.IconButton>
-                <mui.Typography variant="h6" color="inherit" component="div">
+        <AppBar position="static">
+            <Toolbar variant="regular">
+                <IconButton edge="start" color="inherit" aria-label="menu" sx={{ mr: 2 }}>
+                    <Menu/>
+                </IconButton>
+                <Typography variant="h6" color="inherit" component="div">
                     {Competition.name}
-                </mui.Typography>
-            </mui.Toolbar>
-        </mui.AppBar>
+                </Typography>
+            </Toolbar>
+        </AppBar>
     )
 }
 
