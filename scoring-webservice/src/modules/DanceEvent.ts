@@ -36,6 +36,17 @@ export module Yasss {
 
     export class Competitor extends Person {
         public BibNumber: string;
+
+        constructor(firstName: string, lastName: string, bibNumber?: string) {
+            super(firstName, lastName);
+
+            if (bibNumber == undefined) {
+                this.BibNumber = "";
+            }
+            else {
+                this.BibNumber = bibNumber;
+            }
+        }
     }
     
     export class Judge extends Person {
@@ -43,19 +54,26 @@ export module Yasss {
     }
 
     export class DanceEvent {
-        private _name: string;
+        public Name: string;
+
+        constructor() {
+            this.Name = "";
+        }
     }
     
     export class Competition {
-        private _name: string;
         private _dateTime: Date;
-    
         private _leaders: Array<Competitor>;
         private _followers: Array<Competitor>;
     
-        constructor(){
+        public Name: string;
+
+        constructor() {
+            this._dateTime = new Date();
             this._leaders = new Array<Competitor>();
             this._followers = new Array<Competitor>();
+
+            this.Name = "";
         }
     
         public AddLeader(competitor: Competitor) {
