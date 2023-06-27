@@ -1,7 +1,9 @@
-import Slider from '../../../ui/Slider'
+import PrelimsScoresheet from "@/component/prelims-scoresheet";
 
 export default function Competition() {
     return (
-        <Slider />
+        <>
+            <PrelimsScoresheet />
+        </>
     );
 }
