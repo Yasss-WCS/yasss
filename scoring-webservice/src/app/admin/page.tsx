@@ -5,7 +5,7 @@ import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
 
-import Menu from '@mui/icons-material/Menu'
+//import Menu from '@mui/icons-material/Menu'
 
 import { Yasss } from '../../modules/DanceEvent';
 
@@ -33,7 +33,7 @@ function Header(props: {danceEvent: Yasss.DanceEvent}) {
         <AppBar position="static">
             <Toolbar variant="regular">
                 <IconButton edge="start" color="inherit" aria-label="menu" sx={{ mr: 2 }}>
-                    <Menu/>
+                    <div>menu</div>
                 </IconButton>
                 <Typography variant="h6" color="inherit" component="div">
                     {props.danceEvent.Name}
