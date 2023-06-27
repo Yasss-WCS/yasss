@@ -1,14 +1,14 @@
 export module Yasss {
     export enum Division {
-        Newcomer,
-        Novice,
-        Intermediate,
-        Advanced,
-        AllStar,
-        Champion,
-        Open,
-        Sophisticated,
-        Masters,
+        Newcomer = "Newcomer",
+        Novice = "Novice",
+        Intermediate = "Intermediate",
+        Advanced = "Advanced",
+        AllStar = "All Star",
+        Champion = "Champion",
+        Open = "Open",
+        Sophisticated = "Sophsticated",
+        Masters = "Masters",
     }
     
     export interface IPerson {

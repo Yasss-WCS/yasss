@@ -5,7 +5,7 @@ import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
 
-//import Menu from '@mui/icons-material/Menu'
+import Menu from '@mui/icons-material/Menu'
 
 import { Yasss } from '../../modules/DanceEvent';
 
@@ -21,9 +21,7 @@ const Competitions : Yasss.Competition[] = [Competition1, Competition2, Competit
 function CompetitionCard(props: {competition: Yasss.Competition}) {
     return (
         <Card variant="outlined">
-            <div>Competition:</div>
-            <div>{props.competition.Name}</div>
-            <div>{props.competition.Division}</div>
+            <div>{props.competition.Name} - {props.competition.Division}</div>
         </Card>
     )
 }
@@ -33,7 +31,7 @@ function Header(props: {danceEvent: Yasss.DanceEvent}) {
         <AppBar position="static">
             <Toolbar variant="regular">
                 <IconButton edge="start" color="inherit" aria-label="menu" sx={{ mr: 2 }}>
-                    <div>menu</div>
+                    <Menu />
                 </IconButton>
                 <Typography variant="h6" color="inherit" component="div">
                     {props.danceEvent.Name}
@@ -48,15 +46,13 @@ export default function admin() {
     let competitions = Competitions;
 
     let competitionList = competitions.map((competition : Yasss.Competition) => {
-       return <CompetitionCard competition={competition}/>; 
+       return <CompetitionCard key="{competition}" competition={competition}/> 
     });
 
     return (
         <main>
             <Header danceEvent={danceEvent}/>
-            <ul>
-                {competitionList}
-            </ul>
+            {competitionList}
         </main>
     )
 }
