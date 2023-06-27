@@ -6,24 +6,29 @@ import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
 
 import Menu from '@mui/icons-material/Menu'
-import AccountCircle from '@mui/icons-material/AccountCircle'
 
-const Competition = {
-    name: "Liberty Swing 2023",
-    division: "Novice Jack & Jill",
-};
+import { Yasss } from '../../modules/DanceEvent';
 
-function CompetitionCard() {
+// test data
+const DanceEvent : Yasss.DanceEvent = new Yasss.DanceEvent("");
+
+const Competition1 : Yasss.Competition =  new Yasss.Competition("Jack & Jill", Yasss.Division.Novice);
+const Competition2 : Yasss.Competition =  new Yasss.Competition("Jack & Jill", Yasss.Division.Intermediate);
+const Competition3 : Yasss.Competition =  new Yasss.Competition("Jack & Jill", Yasss.Division.Advanced);
+const Competitions : Yasss.Competition[] = [Competition1, Competition2, Competition3];
+
+
+function CompetitionCard(props: {competition: Yasss.Competition}) {
     return (
         <Card variant="outlined">
             <div>Competition:</div>
-            <div>{Competition.name}</div>
-            <div>{Competition.division}</div>
+            <div>{props.competition.Name}</div>
+            <div>{props.competition.Division}</div>
         </Card>
     )
 }
 
-function Header() {
+function Header(props: {danceEvent: Yasss.DanceEvent}) {
     return (
         <AppBar position="static">
             <Toolbar variant="regular">
@@ -31,7 +36,7 @@ function Header() {
                     <Menu/>
                 </IconButton>
                 <Typography variant="h6" color="inherit" component="div">
-                    {Competition.name}
+                    {props.danceEvent.Name}
                 </Typography>
             </Toolbar>
         </AppBar>
@@ -39,10 +44,19 @@ function Header() {
 }
 
 export default function admin() {
+    let danceEvent = DanceEvent;
+    let competitions = Competitions;
+
+    let competitionList = competitions.map((competition : Yasss.Competition) => {
+       return <CompetitionCard competition={competition}/>; 
+    });
+
     return (
-    <main>
-        <Header/>
-        <CompetitionCard/>
-    </main>
+        <main>
+            <Header danceEvent={danceEvent}/>
+            <ul>
+                {competitionList}
+            </ul>
+        </main>
     )
 }
