@@ -1,14 +1,14 @@
 export module Yasss {
     export enum Division {
-        Newcomer,
-        Novice,
-        Intermediate,
-        Advanced,
-        AllStar,
-        Champion,
-        Open,
-        Sophisticated,
-        Masters,
+        Newcomer = "Newcomer",
+        Novice = "Novice",
+        Intermediate = "Intermediate",
+        Advanced = "Advanced",
+        AllStar = "All Star",
+        Champion = "Champion",
+        Open = "Open",
+        Sophisticated = "Sophsticated",
+        Masters = "Masters",
     }
     
     export interface IPerson {
@@ -40,12 +40,7 @@ export module Yasss {
         constructor(firstName: string, lastName: string, bibNumber?: string) {
             super(firstName, lastName);
 
-            if (bibNumber == undefined) {
-                this.BibNumber = "";
-            }
-            else {
-                this.BibNumber = bibNumber;
-            }
+            this.BibNumber = bibNumber != null ? bibNumber : ""; 
         }
     }
     
@@ -56,8 +51,8 @@ export module Yasss {
     export class DanceEvent {
         public Name: string;
 
-        constructor() {
-            this.Name = "";
+        constructor(name: string) {
+            this.Name = name != null ? name : "";
         }
     }
     
@@ -67,13 +62,15 @@ export module Yasss {
         private _followers: Array<Competitor>;
     
         public Name: string;
+        public Division: Division;
 
-        constructor() {
+        constructor(name : string, division?: Division) {
             this._dateTime = new Date();
             this._leaders = new Array<Competitor>();
             this._followers = new Array<Competitor>();
 
-            this.Name = "";
+            this.Name = name != null ? name : "";
+            this.Division = division != null ? division : Division.Open;
         }
     
         public AddLeader(competitor: Competitor) {
