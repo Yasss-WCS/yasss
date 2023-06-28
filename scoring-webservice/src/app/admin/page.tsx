@@ -3,27 +3,23 @@ import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
-import Card from '@mui/material/Card';
 
 import Menu from '@mui/icons-material/Menu'
+
+import AdminPanel from '../../component/admin_panel/AdminPanel';
 
 import { Yasss } from '../../modules/DanceEvent';
 
 // test data
-const DanceEvent : Yasss.DanceEvent = new Yasss.DanceEvent("");
+const DanceEvent: Yasss.DanceEvent = new Yasss.DanceEvent("Liberty Swing 2023");
 
-const Competition1 : Yasss.Competition =  new Yasss.Competition("Jack & Jill", Yasss.Division.Novice);
-const Competition2 : Yasss.Competition =  new Yasss.Competition("Jack & Jill", Yasss.Division.Intermediate);
-const Competition3 : Yasss.Competition =  new Yasss.Competition("Jack & Jill", Yasss.Division.Advanced);
-const Competitions : Yasss.Competition[] = [Competition1, Competition2, Competition3];
-
-
-function CompetitionCard(props: {competition: Yasss.Competition}) {
-    return (
-        <Card variant="outlined">
-            <div>{props.competition.Name} - {props.competition.Division}</div>
-        </Card>
-    )
+// todo
+function GetCurrentDanceEvent() : Yasss.DanceEvent {
+    return DanceEvent;
+}
+//todo
+function GetCurrentCompetitions() : Array<Yasss.Competition> {
+    return new Array<Yasss.Competition>;
 }
 
 function Header(props: {danceEvent: Yasss.DanceEvent}) {
@@ -42,17 +38,13 @@ function Header(props: {danceEvent: Yasss.DanceEvent}) {
 }
 
 export default function admin() {
-    let danceEvent = DanceEvent;
-    let competitions = Competitions;
-
-    let competitionList = competitions.map((competition : Yasss.Competition) => {
-       return <CompetitionCard key="{competition}" competition={competition}/> 
-    });
+    let danceEvent = GetCurrentDanceEvent();
+    let competitions = GetCurrentCompetitions();
 
     return (
         <main>
             <Header danceEvent={danceEvent}/>
-            {competitionList}
+            <AdminPanel competitions={competitions}/>
         </main>
     )
 }
