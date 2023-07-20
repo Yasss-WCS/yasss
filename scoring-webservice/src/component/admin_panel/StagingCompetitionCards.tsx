@@ -1,15 +1,18 @@
 import StagingCompetitionCard from './StagingCompetitionCard';
 
 import { Yasss } from '../../modules/DanceEvent';
-import { useState } from 'react';
+import { useContext } from 'react';
 
-export default function StagingCompetitionCards(props: {competitions: Array<Yasss.Competition>}){
-    if (props.competitions.length < 1)
+import { StagingCompetitionsContext } from './AdminPanel';
+
+
+export default function StagingCompetitionCards(){
+    const stagingCompetitions = useContext(StagingCompetitionsContext);
+    
+    if (stagingCompetitions.length < 1)
         return;
 
-    const [stagingCompetitions, setStagingCompetitions] = useState(props.competitions);
-
-    let competitionList = props.competitions.map((competition : Yasss.Competition) => {
+    let competitionList = stagingCompetitions.map((competition : Yasss.Competition) => {
         return <StagingCompetitionCard key="{competition}" competition={competition}/> 
     });
 

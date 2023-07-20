@@ -22,9 +22,17 @@ export default function AdminPanel(props: {competitions: Array<Yasss.Competition
 
     return (
         <main>
-            <CurrentCompetitionCards competitions={currentCompetitions}/>
-            <StagingCompetitionCards competitions={stagingCompetitions}/>
-            <UpcomingCompetitionCards competitions={upcomingCompetitions}/>
+            <CurrentCompetitionsContext.Provider value={currentCompetitions}>
+            <StagingCompetitionsContext.Provider value={stagingCompetitions}>
+            <UpcomingCompetitionsContext.Provider value={upcomingCompetitions}>
+
+                <CurrentCompetitionCards/>
+                <StagingCompetitionCards/>
+                <UpcomingCompetitionCards/>
+
+            </UpcomingCompetitionsContext.Provider>
+            </StagingCompetitionsContext.Provider>
+            </CurrentCompetitionsContext.Provider>
         </main>
     )
 }
